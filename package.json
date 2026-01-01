@@ -16,7 +16,10 @@
     },
     "resources": {
       "media": []
-    }
+    },
+    "messageKeys": [
+      "dummy"
+    ]
   }
 }
 
