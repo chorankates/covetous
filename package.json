@@ -6,20 +6,20 @@
   "private": true,
   "dependencies": {},
   "pebble": {
-    "displayName": "Covetous",
-    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "main": {
+      "rockyjs": "src/rocky/index.js",
+      "pkjs": "src/pkjs/index.js"
+    },
+    "displayName": "covetous",
+    "uuid": "9557466e-dad8-49bf-9d2b-33e1a0441798",
+    "projectType": "rocky",
     "sdkVersion": "3",
     "enableMultiJS": true,
-    "targetPlatforms": ["aplite", "basalt", "chalk", "diorite", "emery"],
     "watchapp": {
       "watchface": true
     },
     "resources": {
       "media": []
-    },
-    "messageKeys": [
-      "dummy"
-    ]
+    }
   }
 }
-
