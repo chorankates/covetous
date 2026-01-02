@@ -141,7 +141,7 @@ static void prv_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(s_day_layer));
   
   // Create hour text layer (large, left side)
-  s_hour_layer = text_layer_create(GRect(0, 18, 38, 50));
+  s_hour_layer = text_layer_create(GRect(0, 18, 60, 50));
   text_layer_set_background_color(s_hour_layer, GColorClear);
   text_layer_set_text_color(s_hour_layer, GColorWhite);
   text_layer_set_font(s_hour_layer, fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS));
