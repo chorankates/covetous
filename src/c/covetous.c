@@ -10,21 +10,56 @@ static TextLayer *s_hour_layer;
 static char s_day_buffer[4];
 static char s_hour_buffer[4];
 
-// Grid configuration
+// Grid configuration - platform specific
 #define GRID_COLS 10
 #define GRID_ROWS 6
-#define GRID_CELL_SIZE 10
-#define GRID_CELL_SPACING 4
-#define GRID_OFFSET_X 4
-#define GRID_OFFSET_Y 72
+
+#if defined(PBL_PLATFORM_EMERY)
+  // Emery: 200x228 display - larger cells and better spacing
+  #define GRID_CELL_SIZE 14
+  #define GRID_CELL_SPACING 5
+  #define GRID_OFFSET_X 8
+  #define GRID_OFFSET_Y 105
+  #define BATTERY_BAR_WIDTH 4
+  #define BATTERY_BAR_HEIGHT 16
+  #define BATTERY_BAR_SPACING 3
+  #define BATTERY_OFFSET_X 157
+  #define BATTERY_OFFSET_Y 10
+  #define DAY_LAYER_RECT GRect(6, 4, 50, 36)
+  #define HOUR_LAYER_RECT GRect(0, 28, 80, 65)
+  #define HOUR_FONT FONT_KEY_LECO_42_NUMBERS
+#elif defined(PBL_PLATFORM_CHALK)
+  // Chalk: 180x180 round display - centered layout
+  #define GRID_CELL_SIZE 12
+  #define GRID_CELL_SPACING 4
+  #define GRID_OFFSET_X 12
+  #define GRID_OFFSET_Y 85
+  #define BATTERY_BAR_WIDTH 4
+  #define BATTERY_BAR_HEIGHT 14
+  #define BATTERY_BAR_SPACING 3
+  #define BATTERY_OFFSET_X 137
+  #define BATTERY_OFFSET_Y 50
+  #define DAY_LAYER_RECT GRect(26, 42, 45, 32)
+  #define HOUR_LAYER_RECT GRect(18, 36, 70, 55)
+  #define HOUR_FONT FONT_KEY_LECO_42_NUMBERS
+#else
+  // Default: 144x168 display (aplite, basalt, diorite, flint)
+  #define GRID_CELL_SIZE 10
+  #define GRID_CELL_SPACING 4
+  #define GRID_OFFSET_X 4
+  #define GRID_OFFSET_Y 72
+  #define BATTERY_BAR_WIDTH 3
+  #define BATTERY_BAR_HEIGHT 12
+  #define BATTERY_BAR_SPACING 2
+  #define BATTERY_OFFSET_X 112
+  #define BATTERY_OFFSET_Y 8
+  #define DAY_LAYER_RECT GRect(4, 2, 40, 30)
+  #define HOUR_LAYER_RECT GRect(0, 18, 60, 50)
+  #define HOUR_FONT FONT_KEY_LECO_42_NUMBERS
+#endif
 
 // Battery bar configuration
 #define BATTERY_BAR_COUNT 5
-#define BATTERY_BAR_WIDTH 3
-#define BATTERY_BAR_HEIGHT 12
-#define BATTERY_BAR_SPACING 2
-#define BATTERY_OFFSET_X 112
-#define BATTERY_OFFSET_Y 8
 
 // Draw the minute grid
 static void draw_minute_grid(GContext *ctx, int minutes) {
@@ -33,9 +68,9 @@ static void draw_minute_grid(GContext *ctx, int minutes) {
       int cell_minute = row * GRID_COLS + col;
       int x = GRID_OFFSET_X + col * (GRID_CELL_SIZE + GRID_CELL_SPACING);
       int y = GRID_OFFSET_Y + row * (GRID_CELL_SIZE + GRID_CELL_SPACING);
-      
+
       GRect cell_rect = GRect(x, y, GRID_CELL_SIZE, GRID_CELL_SIZE);
-      
+
       if (cell_minute < minutes) {
         // Filled cell for elapsed minutes
         graphics_context_set_fill_color(ctx, GColorWhite);
@@ -57,13 +92,13 @@ static void draw_minute_grid(GContext *ctx, int minutes) {
 static void draw_battery_bars(GContext *ctx, int battery_percent) {
   int bars_filled = (battery_percent + 19) / 20; // Round up: 1-20%=1 bar, 21-40%=2 bars, etc.
   if (battery_percent == 0) bars_filled = 0;
-  
+
   for (int i = 0; i < BATTERY_BAR_COUNT; i++) {
     int x = BATTERY_OFFSET_X + i * (BATTERY_BAR_WIDTH + BATTERY_BAR_SPACING);
     int y = BATTERY_OFFSET_Y;
-    
+
     GRect bar_rect = GRect(x, y, BATTERY_BAR_WIDTH, BATTERY_BAR_HEIGHT);
-    
+
     if (i < bars_filled) {
       // Filled bar
       graphics_context_set_fill_color(ctx, GColorWhite);
@@ -81,13 +116,13 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   // Get current time
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
-  
+
   // Get battery state
   BatteryChargeState battery = battery_state_service_peek();
-  
+
   // Draw minute grid
   draw_minute_grid(ctx, t->tm_min);
-  
+
   // Draw battery bars
   draw_battery_bars(ctx, battery.charge_percent);
 }
@@ -96,15 +131,15 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 static void update_time() {
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
-  
+
   // Update day of month
   snprintf(s_day_buffer, sizeof(s_day_buffer), "%d", t->tm_mday);
   text_layer_set_text(s_day_layer, s_day_buffer);
-  
+
   // Update hour (24h format)
   snprintf(s_hour_buffer, sizeof(s_hour_buffer), "%d", t->tm_hour);
   text_layer_set_text(s_hour_layer, s_hour_buffer);
-  
+
   // Mark canvas layer dirty to redraw grid
   layer_mark_dirty(s_canvas_layer);
 }
@@ -123,31 +158,31 @@ static void battery_handler(BatteryChargeState charge) {
 static void prv_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
-  
+
   // Set black background
   window_set_background_color(window, GColorBlack);
-  
+
   // Create canvas layer for custom drawing (grid and battery)
   s_canvas_layer = layer_create(bounds);
   layer_set_update_proc(s_canvas_layer, canvas_update_proc);
   layer_add_child(window_layer, s_canvas_layer);
-  
+
   // Create day of month text layer (upper left)
-  s_day_layer = text_layer_create(GRect(4, 2, 40, 30));
+  s_day_layer = text_layer_create(DAY_LAYER_RECT);
   text_layer_set_background_color(s_day_layer, GColorClear);
   text_layer_set_text_color(s_day_layer, GColorWhite);
   text_layer_set_font(s_day_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   text_layer_set_text_alignment(s_day_layer, GTextAlignmentLeft);
   layer_add_child(window_layer, text_layer_get_layer(s_day_layer));
-  
+
   // Create hour text layer (large, left side)
-  s_hour_layer = text_layer_create(GRect(0, 18, 60, 50));
+  s_hour_layer = text_layer_create(HOUR_LAYER_RECT);
   text_layer_set_background_color(s_hour_layer, GColorClear);
   text_layer_set_text_color(s_hour_layer, GColorWhite);
-  text_layer_set_font(s_hour_layer, fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS));
+  text_layer_set_font(s_hour_layer, fonts_get_system_font(HOUR_FONT));
   text_layer_set_text_alignment(s_hour_layer, GTextAlignmentRight);
   layer_add_child(window_layer, text_layer_get_layer(s_hour_layer));
-  
+
   // Initial time update
   update_time();
 }
@@ -166,13 +201,13 @@ static void prv_init(void) {
     .load = prv_window_load,
     .unload = prv_window_unload,
   });
-  
+
   // Subscribe to time tick events (every minute)
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
-  
+
   // Subscribe to battery state events
   battery_state_service_subscribe(battery_handler);
-  
+
   window_stack_push(s_window, true);
 }
 
@@ -188,3 +223,4 @@ int main(void) {
   app_event_loop();
   prv_deinit();
 }
+

@@ -29,4 +29,3 @@ but i couldn't figure out which face it was, so this is an attempt to build our 
 | `emery`   | ![emery](media/screenshots/emery.png)     |
 | `flint`   | ![flint](media/screenshots/flint.png)     |
 
-it looks right on a Duo 2, but the `chalk` and `emery` implementations don't take the different dimensions in to account and are not right. will fix this in the future
