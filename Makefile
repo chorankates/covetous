@@ -5,12 +5,12 @@ SCREENSHOT_DIR = media/screenshots
 # All Pebble platforms
 PLATFORMS = aplite basalt chalk diorite emery flint
 
-all: clean build
+all: build
 
 clean:
 	rm -rf build/
 
-build:
+build: clean
 	pebble build
 
 dev-deploy: build
