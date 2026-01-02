@@ -16,7 +16,7 @@ static char s_hour_buffer[4];
 #define GRID_CELL_SIZE 8
 #define GRID_CELL_SPACING 2
 #define GRID_OFFSET_X 36
-#define GRID_OFFSET_Y 58
+#define GRID_OFFSET_Y 72
 
 // Battery bar configuration
 #define BATTERY_BAR_COUNT 5
