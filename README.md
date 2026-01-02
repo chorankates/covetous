@@ -16,11 +16,6 @@ but i couldn't figure out which face it was, so this is an attempt to build our 
 | lower center | 10x6 grid showing minute of the hour |
 | upper right  | watch battery %                      |
 
-- **Day of Month** (upper left) - Displayed in small dot-matrix style
-- **Hour** (center-left) - Large pixelated 24-hour format
-- **Minute Grid** (below hour) - 10x6 grid where filled squares show elapsed minutes
-- **Battery** (upper right) - 5 vertical bars, each representing 20% charge
-
 ## screenshots
 
 | platform  | screenshot                                |
