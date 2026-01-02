@@ -11,9 +11,9 @@ static char s_day_buffer[4];
 static char s_hour_buffer[4];
 
 // Grid configuration
-#define GRID_COLS 6
-#define GRID_ROWS 10
-#define GRID_CELL_SIZE 10
+#define GRID_COLS 10
+#define GRID_ROWS 6
+#define GRID_CELL_SIZE 8
 #define GRID_CELL_SPACING 2
 #define GRID_OFFSET_X 36
 #define GRID_OFFSET_Y 58
@@ -45,7 +45,7 @@ static void draw_minute_grid(GContext *ctx, int minutes) {
         graphics_context_set_stroke_color(ctx, GColorLightGray);
         graphics_context_set_stroke_width(ctx, 1);
         // Draw small dots/squares for unfilled cells
-        GRect dot_rect = GRect(x + 3, y + 3, 4, 4);
+        GRect dot_rect = GRect(x + 2, y + 2, 4, 4);
         graphics_context_set_fill_color(ctx, GColorDarkGray);
         graphics_fill_rect(ctx, dot_rect, 0, GCornerNone);
       }
