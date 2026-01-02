@@ -1,5 +1,8 @@
 #include <pebble.h>
 
+// Persistent storage keys
+#define STORAGE_KEY_INVERTED 1
+
 // Window and layers
 static Window *s_window;
 static Layer *s_canvas_layer;
@@ -9,6 +12,29 @@ static TextLayer *s_hour_layer;
 // Buffers for text
 static char s_day_buffer[4];
 static char s_hour_buffer[4];
+
+// Settings
+static bool s_inverted = false;
+
+// Forward declarations
+static void apply_colors(void);
+
+// Color helpers
+static GColor color_bg(void) {
+  return s_inverted ? GColorWhite : GColorBlack;
+}
+
+static GColor color_primary(void) {
+  return s_inverted ? GColorBlack : GColorWhite;
+}
+
+static GColor color_secondary(void) {
+  return s_inverted ? GColorDarkGray : GColorLightGray;
+}
+
+static GColor color_tertiary(void) {
+  return s_inverted ? GColorLightGray : GColorDarkGray;
+}
 
 // Grid configuration - platform specific
 #define GRID_COLS 10
@@ -73,15 +99,15 @@ static void draw_minute_grid(GContext *ctx, int minutes) {
 
       if (cell_minute < minutes) {
         // Filled cell for elapsed minutes
-        graphics_context_set_fill_color(ctx, GColorWhite);
+        graphics_context_set_fill_color(ctx, color_primary());
         graphics_fill_rect(ctx, cell_rect, 0, GCornerNone);
       } else {
         // Dim/outline cell for remaining minutes
-        graphics_context_set_stroke_color(ctx, GColorLightGray);
+        graphics_context_set_stroke_color(ctx, color_secondary());
         graphics_context_set_stroke_width(ctx, 1);
         // Draw small dots/squares for unfilled cells
         GRect dot_rect = GRect(x + 2, y + 2, 4, 4);
-        graphics_context_set_fill_color(ctx, GColorDarkGray);
+        graphics_context_set_fill_color(ctx, color_tertiary());
         graphics_fill_rect(ctx, dot_rect, 0, GCornerNone);
       }
     }
@@ -101,11 +127,11 @@ static void draw_battery_bars(GContext *ctx, int battery_percent) {
 
     if (i < bars_filled) {
       // Filled bar
-      graphics_context_set_fill_color(ctx, GColorWhite);
+      graphics_context_set_fill_color(ctx, color_primary());
       graphics_fill_rect(ctx, bar_rect, 0, GCornerNone);
     } else {
       // Empty bar outline
-      graphics_context_set_stroke_color(ctx, GColorDarkGray);
+      graphics_context_set_stroke_color(ctx, color_tertiary());
       graphics_draw_rect(ctx, bar_rect);
     }
   }
@@ -154,13 +180,33 @@ static void battery_handler(BatteryChargeState charge) {
   layer_mark_dirty(s_canvas_layer);
 }
 
+// AppMessage received handler
+static void inbox_received_handler(DictionaryIterator *iter, void *context) {
+  Tuple *inverted_tuple = dict_find(iter, MESSAGE_KEY_KEY_INVERTED);
+  if (inverted_tuple) {
+    s_inverted = inverted_tuple->value->int32 == 1;
+    persist_write_bool(STORAGE_KEY_INVERTED, s_inverted);
+    apply_colors();
+  }
+}
+
+// Load saved settings
+static void load_settings(void) {
+  s_inverted = persist_exists(STORAGE_KEY_INVERTED) ? persist_read_bool(STORAGE_KEY_INVERTED) : false;
+}
+
+// Apply current color scheme to UI elements
+static void apply_colors(void) {
+  window_set_background_color(s_window, color_bg());
+  text_layer_set_text_color(s_day_layer, color_primary());
+  text_layer_set_text_color(s_hour_layer, color_primary());
+  layer_mark_dirty(s_canvas_layer);
+}
+
 // Window load
 static void prv_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
-
-  // Set black background
-  window_set_background_color(window, GColorBlack);
 
   // Create canvas layer for custom drawing (grid and battery)
   s_canvas_layer = layer_create(bounds);
@@ -170,7 +216,6 @@ static void prv_window_load(Window *window) {
   // Create day of month text layer (upper left)
   s_day_layer = text_layer_create(DAY_LAYER_RECT);
   text_layer_set_background_color(s_day_layer, GColorClear);
-  text_layer_set_text_color(s_day_layer, GColorWhite);
   text_layer_set_font(s_day_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   text_layer_set_text_alignment(s_day_layer, GTextAlignmentLeft);
   layer_add_child(window_layer, text_layer_get_layer(s_day_layer));
@@ -178,12 +223,12 @@ static void prv_window_load(Window *window) {
   // Create hour text layer (large, left side)
   s_hour_layer = text_layer_create(HOUR_LAYER_RECT);
   text_layer_set_background_color(s_hour_layer, GColorClear);
-  text_layer_set_text_color(s_hour_layer, GColorWhite);
   text_layer_set_font(s_hour_layer, fonts_get_system_font(HOUR_FONT));
   text_layer_set_text_alignment(s_hour_layer, GTextAlignmentRight);
   layer_add_child(window_layer, text_layer_get_layer(s_hour_layer));
 
-  // Initial time update
+  // Apply colors and initial time update
+  apply_colors();
   update_time();
 }
 
@@ -196,6 +241,9 @@ static void prv_window_unload(Window *window) {
 
 // Initialize
 static void prv_init(void) {
+  // Load saved settings
+  load_settings();
+
   s_window = window_create();
   window_set_window_handlers(s_window, (WindowHandlers) {
     .load = prv_window_load,
@@ -207,6 +255,10 @@ static void prv_init(void) {
 
   // Subscribe to battery state events
   battery_state_service_subscribe(battery_handler);
+
+  // Open AppMessage for settings
+  app_message_register_inbox_received(inbox_received_handler);
+  app_message_open(64, 64);
 
   window_stack_push(s_window, true);
 }

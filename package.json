@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "keywords": ["pebble-app"],
   "private": false,
-  "dependencies": {},
+  "dependencies": {
+    "pebble-clay": "^1.0.0"
+  },
   "pebble": {
     "displayName": "covetous",
     "uuid": "dea44fb5-8d59-4073-8a68-a7b07fd56517",
@@ -22,7 +24,7 @@
       "watchface": true
     },
     "messageKeys": [
-      "dummy"
+      "KEY_INVERTED"
     ],
     "resources": {
       "media": []
