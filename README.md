@@ -1,6 +1,8 @@
 # covetous
 my first pebble watch face
 
+get it on the [appstore](https://apps.rebble.io/en_US/application/69581fbe39d92d0009bb746e)!
+
 ## genesis
 
 i really like the watch face on the `Pebble 2 Duo` screenshot from [repebble.com/watch](https://repebble.com/watch)
