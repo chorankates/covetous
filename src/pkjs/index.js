@@ -1,5 +1,3 @@
-// Configuration page for Covetous watchface
-
 var Clay = require('pebble-clay');
 var clayConfig = [
   {
@@ -7,11 +5,29 @@ var clayConfig = [
     "defaultValue": "Covetous Settings"
   },
   {
-    "type": "toggle",
-    "messageKey": "KEY_INVERTED",
-    "label": "Inverted Colors",
-    "defaultValue": false,
-    "description": "Swap black and white colors"
+    "type": "section",
+    "items": [
+      {
+        "type": "heading",
+        "defaultValue": "Color Scheme"
+      },
+      {
+        "type": "radiogroup",
+        "messageKey": "KEY_INVERTED",
+        "label": "Theme",
+        "defaultValue": "0",
+        "options": [
+          {
+            "label": "Default (Dark)",
+            "value": "0"
+          },
+          {
+            "label": "Inverted (Light)",
+            "value": "1"
+          }
+        ]
+      }
+    ]
   },
   {
     "type": "submit",
@@ -20,4 +36,3 @@ var clayConfig = [
 ];
 
 var clay = new Clay(clayConfig);
-
