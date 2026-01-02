@@ -16,12 +16,13 @@ but i couldn't figure out which face it was, so this is an attempt to build our 
 
 ## screenshots
 
-| platform | screenshot                                |
-|----------|-------------------------------------------|
-| aplite   | ![aplite](media/screenshots/aplite.png)   |
-| basalt   | ![basalt](media/screenshots/basalt.png)   |
-| chalk    | ![chalk](media/screenshots/chalk.png)     |
-| diorite  | ![diorite](media/screenshots/diorite.png) |
-| emery    | ![emery](media/screenshots/emery.png)     |
-| flint    | ![flint](media/screenshots/flint.png)     | 
+| platform  | screenshot                                |
+|-----------|-------------------------------------------|
+| `aplite`  | ![aplite](media/screenshots/aplite.png)   |
+| `basalt`  | ![basalt](media/screenshots/basalt.png)   |
+| `chalk`   | ![chalk](media/screenshots/chalk.png)     |
+| `diorite` | ![diorite](media/screenshots/diorite.png) |
+| `emery`   | ![emery](media/screenshots/emery.png)     |
+| `flint`   | ![flint](media/screenshots/flint.png)     | 
 
+it looks right on a Duo 2, but the `chalk` and `emery` implementations don't take the different dimensions in to account and are not right. will fix this in the future
